@@ -1,45 +1,32 @@
 import streamlit as st
-# Note: You will need an API key (OpenAI or Gemini) to power the "Thinking" part
-import openai 
+import google.generativeai as genai
+import random
 
-st.title("🐦 X-Handler: Content & Reply Engine")
+# --- SETUP ---
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
-# --- 1. TONE CONFIGURATION ---
-# These instructions stay hidden from the user but guide the AI
-PERSONA_INSTRUCTIONS = """
-You are an X (Twitter) handler. Your goal is to sound like a grounded, smart, yet simple human.
-Rules:
-1. No 'Big Grammar' or complex academic words. Use 'Simple English'.
-2. Tone: Helpful peer, slightly witty, authentic.
-3. Formatting: Use lots of white space (line breaks). No walls of text.
-4. No 'Cringe' AI phrases like 'In the ever-evolving landscape' or 'Delve into'.
-5. Keep it short and punchy.
-"""
+# --- ADD CREATIVITY CONTROLS ---
+st.sidebar.header("Level of Creativity")
+creativity = st.sidebar.slider("How 'human' should I be?", 0.1, 1.0, 0.7)
 
-tab1, tab2 = st.tabs(["✨ Craft a New Post", "💬 Generate a Reply"])
+# Create the model with the dynamic temperature
+model = genai.GenerativeModel(
+    model_name='gemini-pro',
+    generation_config={
+        "temperature": creativity, # This stops the repetitive answers
+        "top_p": 0.95,
+        "top_k": 40,
+    }
+)
 
-# --- TAB 1: NEW POST GENERATION ---
-with tab1:
-    raw_topic = st.text_input("What's the topic today?", placeholder="e.g. My new data viz tool")
-    if st.button("Generate Post"):
-        if raw_topic:
-            # Placeholder for the AI Call
-            result = call_ai(PERSONA_INSTRUCTIONS + "Write a post about: " + raw_topic)
-            st.subheader("Your Draft:")
-            st.code("I just finished building my new data tool. \n\nIt was a headache at first, but now it works in seconds. \n\nNo big code, just simple insights. Who wants to try it? 🚀", language=None)
-            st.caption("Customized to your 'Simple Human' tone.")
-
-# --- TAB 2: REPLY GENERATOR ---
-with tab2:
-    st.write("Paste the post/reply you want to respond to below:")
-    others_post = st.text_area("Their Post:", placeholder="Paste their text here...")
-    
-    context = st.selectbox("Your Goal:", ["Agree & Support", "Add Value/Insight", "Witty Comeback"])
-    
-    if st.button("Generate Response"):
-        if others_post:
-            # Placeholder for the AI Call
-            result = call_ai(PERSONA_INSTRUCTIONS + f"Generate a {context} response to: " + others_post)
-            st.subheader("Suggested Reply:")
-            st.info("That's a solid point! I've seen the same thing happen with data projects. Keeping it simple usually wins. 🤝")
-
+# --- REFINED PROMPT ---
+# We add a 'random seed' or instruction to keep it fresh
+def generate_fresh_post(topic):
+    rules = f"""
+    Write a post about {topic}. 
+    Use a fresh perspective. Do not use the same opening as previous posts.
+    Keep it simple, human, and conversational.
+    Random style hint: {random.choice(['question-based', 'story-style', 'bold-statement', 'list-format'])}
+    """
+    response = model.generate_content(rules)
+    return response.text
