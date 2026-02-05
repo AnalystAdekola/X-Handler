@@ -1,6 +1,6 @@
 import streamlit as st
 # Note: You will need an API key (OpenAI or Gemini) to power the "Thinking" part
-# import openai 
+import openai 
 
 st.title("🐦 X-Handler: Content & Reply Engine")
 
@@ -24,7 +24,7 @@ with tab1:
     if st.button("Generate Post"):
         if raw_topic:
             # Placeholder for the AI Call
-            # result = call_ai(PERSONA_INSTRUCTIONS + "Write a post about: " + raw_topic)
+            result = call_ai(PERSONA_INSTRUCTIONS + "Write a post about: " + raw_topic)
             st.subheader("Your Draft:")
             st.code("I just finished building my new data tool. \n\nIt was a headache at first, but now it works in seconds. \n\nNo big code, just simple insights. Who wants to try it? 🚀", language=None)
             st.caption("Customized to your 'Simple Human' tone.")
@@ -39,6 +39,7 @@ with tab2:
     if st.button("Generate Response"):
         if others_post:
             # Placeholder for the AI Call
-            # result = call_ai(PERSONA_INSTRUCTIONS + f"Generate a {context} response to: " + others_post)
+            result = call_ai(PERSONA_INSTRUCTIONS + f"Generate a {context} response to: " + others_post)
             st.subheader("Suggested Reply:")
             st.info("That's a solid point! I've seen the same thing happen with data projects. Keeping it simple usually wins. 🤝")
+
